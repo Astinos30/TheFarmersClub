@@ -1,0 +1,60 @@
+# .github/workflows/ci-cd.yml
+
+name: CI/CD Pipeline for The Farmers Club
+
+# Trigger the workflow on specific events
+on:
+  push:
+    branches:
+      - main # Run this workflow when code is pushed to the main branch
+  pull_request:
+    branches:
+      - main # Run this workflow when a pull request is made to the main branch
+
+# Define the jobs to run
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js (if needed for linting or testing)
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Specify the Node.js version
+
+      # Step 3: Install dependencies (if any)
+      - name: Install Dependencies
+        run: npm install # If you have a package.json file, this installs dependencies
+
+      # Step 4: Lint the code
+      - name: Lint Code
+        run: |
+          npx eslint . --ext .js,.html # Replace with your linter configuration
+        continue-on-error: true # Optional: Continue even if linting fails
+
+      # Step 5: Run Tests
+      - name: Run Tests
+        run: |
+          echo "Running tests..."
+          # Add your test commands here (e.g., npm test)
+
+  deploy-to-github-pages:
+    needs: lint-and-test # Ensure linting and testing pass before deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./ # Publish the root directory
